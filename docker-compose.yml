@@ -1,0 +1,81 @@
+services:
+  # Default zero-config profile: SQLite + English showcase + host Ollama
+  ops-copilot:
+    build: .
+    container_name: enterprise-ops-copilot
+    ports:
+      - "8000:8000"
+    environment:
+      APP_LOCALE: "en"
+      STORAGE_BACKEND: "sqlite"
+      AUTH_MODE: "token"
+      ALLOW_DEMO_TOKENS: "true"
+      # Points to Ollama running on the Windows/macOS host GPU (or override with OpenAI API)
+      LLM_BASE_URL: "${LLM_BASE_URL:-http://host.docker.internal:11434/v1}"
+      LLM_API_KEY: "${LLM_API_KEY:-ollama}"
+      LLM_MODEL: "${LLM_MODEL:-qwen3:8b}"
+      ROUTER_FAST_MODEL: "${ROUTER_FAST_MODEL:-qwen3:8b}"
+      ROUTER_STRONG_MODEL: "${ROUTER_STRONG_MODEL:-qwen3:14b}"
+      EMBEDDING_MODEL: "${EMBEDDING_MODEL:-bge-m3}"
+      RAG_DB_PATH: "/app/data/knowledge.db"
+      OPS_DB_PATH: "/app/data/ops.db"
+      CHECKPOINT_DB_PATH: "/app/data/checkpoints.db"
+      TRACE_DB_PATH: "/app/data/traces.db"
+      OTEL_EXPORT_JSONL_PATH: "/app/data/otel_spans.jsonl"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data
+      - ./knowledge_base:/app/knowledge_base:ro
+      - ./knowledge_base_en:/app/knowledge_base_en:ro
+
+  # Cloud-native profile: docker compose --profile postgres up --build
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: enterprise-ops-postgres
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ops_copilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ops_copilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ops-copilot-pg:
+    build: .
+    container_name: enterprise-ops-copilot-pg
+    profiles: ["postgres"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+    environment:
+      APP_LOCALE: "en"
+      STORAGE_BACKEND: "postgres"
+      POSTGRES_DSN: "postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/ops_copilot"
+      AUTH_MODE: "token"
+      ALLOW_DEMO_TOKENS: "true"
+      LLM_BASE_URL: "${LLM_BASE_URL:-http://host.docker.internal:11434/v1}"
+      LLM_API_KEY: "${LLM_API_KEY:-ollama}"
+      LLM_MODEL: "${LLM_MODEL:-qwen3:8b}"
+      ROUTER_FAST_MODEL: "${ROUTER_FAST_MODEL:-qwen3:8b}"
+      ROUTER_STRONG_MODEL: "${ROUTER_STRONG_MODEL:-qwen3:14b}"
+      EMBEDDING_MODEL: "${EMBEDDING_MODEL:-bge-m3}"
+      OTEL_EXPORT_JSONL_PATH: "/app/data/otel_spans.jsonl"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data
+      - ./knowledge_base:/app/knowledge_base:ro
+      - ./knowledge_base_en:/app/knowledge_base_en:ro
+
+volumes:
+  pgdata:
