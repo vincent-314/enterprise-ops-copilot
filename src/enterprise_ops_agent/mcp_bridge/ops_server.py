@@ -31,11 +31,14 @@ def _get_store() -> Any:
 
 
 @mcp.tool(
-    description="List internal IT/Ops incident tickets filtered by status.",
+    description="List internal IT/Ops incident tickets filtered by status and optional severity.",
     annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False),
 )
-def list_incidents(status: Literal["open", "investigating", "closed", "all"] = "open") -> str:
-    incidents = _get_store().list_incidents(status)
+def list_incidents(
+    status: Literal["open", "investigating", "closed", "all"] = "open",
+    severity: Literal["P1", "P2", "P3", "all"] = "all",
+) -> str:
+    incidents = _get_store().list_incidents(status, severity=severity)
     return json.dumps(
         {"ok": True, "count": len(incidents), "incidents": incidents},
         ensure_ascii=False,
@@ -43,7 +46,10 @@ def list_incidents(status: Literal["open", "investigating", "closed", "all"] = "
 
 
 @mcp.tool(
-    description="Fetch live CPU, memory, latency, error rate, and log excerpt for a named service.",
+    description=(
+        "Fetch live CPU, memory, latency, error rate, and log excerpt for an exact service_name. "
+        "Call list_incidents first if you do not yet know the exact service_name; never guess placeholders."
+    ),
     annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False),
 )
 def get_service_metrics(service_name: str) -> str:
@@ -62,7 +68,10 @@ def get_service_metrics(service_name: str) -> str:
 
 
 @mcp.tool(
-    description="Search recent release/deployment records for a named service.",
+    description=(
+        "Search recent release/deployment records for an exact service_name. "
+        "Call list_incidents first if you do not yet know the exact service_name; never guess placeholders."
+    ),
     annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False),
 )
 def search_recent_deployments(service_name: str, hours: int = 24) -> str:

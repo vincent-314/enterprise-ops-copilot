@@ -69,10 +69,12 @@ Measured across 10 enterprise scenarios (RAG QA, ACL isolation, multi-hop root-c
 | `fixed:qwen3:8b` | 7/10 | 7/10 | 70.0% | 4.80 / 5 | 10,925 ms | 28,799 |
 | `fixed:qwen3:14b` | 7/10 | 7/10 | 70.0% | 4.80 / 5 | 21,344 ms | 26,328 |
 | `router:8b+14b` (v1) | 9/10 | 8/10 | 80.0% | 4.71 / 5 | 19,929 ms | 26,230 |
-| **`router:8b+14b` (v2, guardrail-first)** | **9/10** | **9/10** | **90.0%** | **4.86 / 5** | **18,400 ms** | **29,841** |
+| `router:8b+14b` (v2, guardrail-first) | 9/10 | 9/10 | 90.0% | 4.86 / 5 | 18,400 ms | 29,841 |
+| **`router:8b+14b` (v3, EN + sequential triage)** | **10/10** | **10/10** | **100.0%** | **5.00 / 5** | **19,155 ms** | **35,728** |
 
 - Moving deterministic input guardrails **before** the LLM router cut direct jailbreak latency from `10,013 ms` down to **`0.0 ms` (`0 tokens`)**.
-- Full per-case breakdowns and judge critiques: [v1 Baseline Report](docs/benchmarks/phase5_eval_report.md) · [v2 Router Report](docs/benchmarks/phase5_eval_v2_router.md).
+- Enforcing sequential discovery (`list_incidents` before `get_service_metrics`/`search_recent_deployments`) + `4096` max tokens eliminated speculative `SERVICE_NOT_FOUND` tool calls, cutting `ops_multihop_root_cause` latency from `110,263 ms` to **`49,898 ms`** and pushing the suite to **10/10 (100.0%)**.
+- Full per-case breakdowns and judge critiques: [v1 Baseline Report](docs/benchmarks/phase5_eval_report.md) · [v2 Router Report](docs/benchmarks/phase5_eval_v2_router.md) · [v3 10/10 EN Report](docs/benchmarks/phase5_eval_v3_router_en.md).
 
 ---
 

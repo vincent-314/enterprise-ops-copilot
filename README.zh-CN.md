@@ -12,7 +12,7 @@
 - **MCP 协议解耦**（`src/enterprise_ops_agent/mcp_bridge/`）：官方 `mcp==2.3.0` stdio 服务，利用 `ToolAnnotations` 自动映射 `READ` / `WRITE_LOW` / `HIGH_RISK`。
 - **四层安全护栏与可观测性**（`src/enterprise_ops_agent/security/`、`observability/`）：入口直接注入拦截（0ms 拦截，不浪费路由算力）、代码级工具 RBAC、`<untrusted_tool_output>` 间接注入沙箱、出口 DLP 脱敏，以及 SQLite/Postgres `AuditTracer` + OTel/OTLP Span 导出。
 - **双存储后端**（`src/enterprise_ops_agent/storage/`）：默认零配置 SQLite，支持 `STORAGE_BACKEND=postgres` 一键切换至 `PostgreSQL + pgvector`。
-- **双语 Eval 与复杂度路由**（`src/enterprise_ops_agent/evals/`）：支持 `APP_LOCALE=en|zh` 双语 10 场景黄金评测集 + `qwen3:14b` LLM-as-a-Judge；路由策略达到 **90.0% 通过率、平均忠实度 4.86/5**。
+- **双语 Eval 与复杂度路由**（`src/enterprise_ops_agent/evals/`）：支持 `APP_LOCALE=en|zh` 双语 10 场景黄金评测集 + `qwen3:14b` LLM-as-a-Judge；最新路由策略达到 **10/10（100.0%）通过率、平均忠实度 5.00/5**。
 
 ## 快速运行
 

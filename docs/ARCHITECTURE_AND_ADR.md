@@ -44,6 +44,7 @@ This document captures the key architectural trade-offs, production pitfalls, an
 - Evaluated a 10-case golden suite with deterministic trajectory/security assertions plus `qwen3:14b` LLM-as-a-Judge:
   - Baseline `fixed:qwen3:8b`: 70.0% pass rate (P50 `10.9s`); `fixed:qwen3:14b`: 70.0% (P50 `21.3s`).
   - Root-cause fixes (guardrail-before-router ordering, expanding judge tool-evidence window, explicit ticket/version/permission-denial grounding rules) pushed `router:8b+14b` to **90.0% (9/10)** with **4.86/5** average faithfulness.
+  - Sequential service-discovery constraints (forbidding placeholder `service_name` speculation prior to `list_incidents`), optional `severity` filtering on `list_incidents`, and raising `llm_max_tokens` to `4096` for reasoning-capable models cut `ops_multihop_root_cause` latency from `110.3s` to **`49.9s`** and achieved **100.0% (10/10)** with **5.00/5** average faithfulness.
 
 ## ADR-007: Closing the HTTP Identity Boundary & Dual SQLite/PostgreSQL Backends
 

@@ -609,15 +609,21 @@ class PostgresOpsStore(_PostgresMixin):
                     dep,
                 )
 
-    def list_incidents(self, status: str = "open") -> list[dict[str, Any]]:
+    def list_incidents(self, status: str = "open", severity: str = "all") -> list[dict[str, Any]]:
+        clauses: list[str] = []
+        params: list[Any] = []
+        if status != "all":
+            clauses.append("status = %s")
+            params.append(status)
+        if severity != "all":
+            clauses.append("severity = %s")
+            params.append(severity)
+        where_sql = f" WHERE {' AND '.join(clauses)}" if clauses else ""
         with self._connect() as conn:
-            if status == "all":
-                rows = conn.execute("SELECT * FROM incidents ORDER BY reported_at DESC").fetchall()
-            else:
-                rows = conn.execute(
-                    "SELECT * FROM incidents WHERE status = %s ORDER BY reported_at DESC",
-                    (status,),
-                ).fetchall()
+            rows = conn.execute(
+                f"SELECT * FROM incidents{where_sql} ORDER BY reported_at DESC",
+                params,
+            ).fetchall()
         return [dict(r) for r in rows]
 
     def get_service_metrics(self, service_name: str) -> dict[str, Any] | None:
