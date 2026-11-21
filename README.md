@@ -78,6 +78,19 @@ Measured across 10 enterprise scenarios (RAG QA, ACL isolation, multi-hop root-c
 
 ---
 
+## Production LLM Serving Benchmark (Ollama vs. vLLM)
+
+Benchmarked `Qwen3-8B` across local single-node **Ollama (`RTX 5060 Ti 16GB`)** and cloud **vLLM (`NVIDIA L4 22GB`, `Qwen/Qwen3-8B-AWQ`, `--enable-prefix-caching --tool-call-parser hermes`)** using [scripts/bench_serving.py](scripts/bench_serving.py) and [week3_vllm_sglang_colab.ipynb](benchmarks/week3_vllm_sglang_colab.ipynb):
+
+![Ollama vs vLLM Serving Benchmark](benchmarks/results/ollama_vs_vllm_charts.png)
+
+- **Continuous Batching Scaling (`short_triage`, strict JSON Schema):** Local Ollama stalled at `61.5 tok/s` (`TTFT P95 = 3,305.6 ms` at `c=4`), whereas **vLLM scaled 12.28x to `578.4 tok/s` (`10.66 RPS`) at `c=16`** with **`282.5 ms` `TTFT P95`** and **`100.0%` schema validity**.
+- **Automatic Prefix Caching (`prefix_cache_rag`, ~3.3K prompt tokens):** Prometheus recorded a **`90.98%` prefix-cache hit rate** (`48,000 / 52,758`), driving `743.5 ms` `TTFT P50` at `c=8` (**7.6x faster** than Ollama warm `c=4` at `5,686.9 ms`).
+- **Concurrent Tool-Calling (`tool_call_burst`, `c=16`):** **`501.3 tok/s` (`15.43 RPS`)**, **`100.0%` valid tool-call arguments**, and **`4/4 PASS`** on `scripts/probe_models.py`.
+- Full data, Prometheus deltas, and deployment takeaways: **[English Serving Benchmark Report](docs/LLM_SERVING_BENCHMARK.md)** · **[中文压测报告](docs/LLM_SERVING_BENCHMARK.zh-CN.md)**.
+
+---
+
 ## Quickstart
 
 ### 1. Local Setup & Offline Test Suite (Zero External Services Needed)

@@ -13,6 +13,7 @@
 - **四层安全护栏与可观测性**（`src/enterprise_ops_agent/security/`、`observability/`）：入口直接注入拦截（0ms 拦截，不浪费路由算力）、代码级工具 RBAC、`<untrusted_tool_output>` 间接注入沙箱、出口 DLP 脱敏，以及 SQLite/Postgres `AuditTracer` + OTel/OTLP Span 导出。
 - **双存储后端**（`src/enterprise_ops_agent/storage/`）：默认零配置 SQLite，支持 `STORAGE_BACKEND=postgres` 一键切换至 `PostgreSQL + pgvector`。
 - **双语 Eval 与复杂度路由**（`src/enterprise_ops_agent/evals/`）：支持 `APP_LOCALE=en|zh` 双语 10 场景黄金评测集 + `qwen3:14b` LLM-as-a-Judge；最新路由策略达到 **10/10（100.0%）通过率、平均忠实度 5.00/5**。
+- **生产级 GPU 推理压测与 Prefix Cache 基准**（`scripts/bench_serving.py`、`benchmarks/week3_vllm_sglang_colab.ipynb`）：实测对比本地 `RTX 5060 Ti (Ollama)` 与云端 `NVIDIA L4 (vLLM + Qwen3-8B-AWQ)`，vLLM 在 16 并发下达到 **`578.4 tok/s`（12.28x 扩展、`TTFT P95 = 282.5 ms`）**、长 Runbook 前缀缓存命中率 **`90.98%`**、并发工具调用与四项能力探针均保持 **100% 合格**。
 
 ## 快速运行
 
@@ -33,4 +34,4 @@ docker compose up --build
 docker compose --profile postgres up --build
 ```
 
-中文完整架构决策与踩坑复盘见：[docs/ADR_AND_RETROSPECTIVE.md](docs/ADR_AND_RETROSPECTIVE.md)；英文版见 [docs/ARCHITECTURE_AND_ADR.md](docs/ARCHITECTURE_AND_ADR.md)。
+中文完整架构决策与踩坑复盘见：[docs/ADR_AND_RETROSPECTIVE.md](docs/ADR_AND_RETROSPECTIVE.md) 与 [docs/LLM_SERVING_BENCHMARK.zh-CN.md](docs/LLM_SERVING_BENCHMARK.zh-CN.md)；英文版见 [docs/ARCHITECTURE_AND_ADR.md](docs/ARCHITECTURE_AND_ADR.md) 与 [docs/LLM_SERVING_BENCHMARK.md](docs/LLM_SERVING_BENCHMARK.md)。
